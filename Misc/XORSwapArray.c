@@ -15,7 +15,7 @@ void swapArr(int* arr, size_t len) {
     int
       *a = &(arr[i]),
       *b = &(arr[len-i-1]);
-      *a ^= *b ^= *a ^= *b;
+      *a ^= *b, *b ^= *a, *a ^= *b;
   }
 }
 
