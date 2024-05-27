@@ -1,34 +1,87 @@
-#include <string>
-#include <vector>
-#include <iostream>
+#include "matricula_ira.h"
 
-using namespace std;
+int main(void) {
+  std::vector<Aluno> alunoVector;
+  std::vector<Aluno> selectionSorted;
+  std::vector<Aluno> insertionSorted;
+  std::vector<Aluno> bubbleSorted;
 
-#define declare(type, name)                        \
-  private:                                         \
-    type _##name;                                  \
-  public:                                          \
-    void set_##name(type& var)                     \
-    {                                              \
-      _##name = var;                               \
-    }                                              \
-    type get_##name()                              \
-    {                                              \
-      return _##name;                              \
-    }                                              \
+  int count = DEFAULT_COUNT; // 10
 
-class Aluno {
-  declare(int, matricula);
-  declare(double, ira);
-  declare(std::string, nome);
-  public:
-    Aluno(int matricula, double ira, const std::string& nome)
-    : _matricula(matricula), _ira(ira), _nome(nome) {}
-};
+  for (int  i = 0; i < count; ++i)
+    promptAluno(alunoVector, i, count);
+
+  selectionSorted = selectionSort(alunoVector);
+  insertionSorted = insertionSort(alunoVector);
+  bubbleSorted = bubbleSort(alunoVector);
+
+  printAlunoVector("Selection Sort (Matricula)", selectionSorted);
+  printAlunoVector("Insertion Sort (Matricula)", insertionSorted);
+  printAlunoVector("Bubble Sort (IRA)", bubbleSorted);
+
+   return 0;
+}
 
 void addAluno(std::vector<Aluno>& alunoVec, int matricula, double ira, const std::string& nome) {
   Aluno newAluno(matricula, ira, nome);
   alunoVec.push_back(newAluno);
+}
+
+template<typename T>
+void verifiedInput(const std::string& title,
+                   T& input,
+                   const std::vector<std::function<std::pair<bool, std::string>()>>& checks) {
+  while (true) {
+    std::cout << "\n——————— ---------- ————————\n"
+              << title
+              << "\n——————— ---------- ————————" << std::endl;
+    if (std::cin >> input) {
+      bool inputIsValid = true;
+      for (const auto& check : checks) {
+        auto result = check();
+        if (result.first) {
+          std::cout << result.second << std::endl;
+          inputIsValid = false;
+          break;
+        }
+      }
+      if (inputIsValid) {
+        break;
+      }
+    } else {
+      std::cin.clear();
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      std::cout << "\nErro: tipo imcompativel." << std::endl;
+    }
+  }
+}
+
+void promptAluno(std::vector<Aluno>& v, int i, int count) {
+  int matricula;
+  double ira;
+  std::string nome;
+
+  std::cout << "\nxxxxxxx \' \' \' \' xxxxxxx\n"
+            << "Insira Aluno " << "(" <<  i+1 << "/" << count << ")"
+            << "\nxxxxxxx \' \' \' \' xxxxxxx" << std::endl;
+
+  verifiedInput("Nome (Max 60 caracteres):", nome, {
+    VALIDATE_CLAUSE(nome.empty(), "Erro: 'nome' deve ser registrado."),
+    VALIDATE_CLAUSE(nome.size() > 60, "Erro: 'nome' nao deve exceder 60 caracteres."),
+    VALIDATE_CLAUSE(std::all_of(nome.begin(), nome.end(), ::isdigit), "Erro: 'nome' nao deve ser um numeral.")
+  });
+
+    
+  verifiedInput("Ira:", ira, {
+    VALIDATE_CLAUSE(ira < 0, "Erro: 'ira' deve ser positivo.")
+  });
+
+    verifiedInput("Matricula:", matricula, {
+    VALIDATE_CLAUSE(matricula < 0, "Erro: 'matricula' deve ser positivo.")
+  });
+
+  addAluno(v, matricula, ira, nome);
+
 }
 
 void printAluno(Aluno aluno) {
@@ -43,7 +96,7 @@ void printAlunoVector(std::string title, std::vector<Aluno> v) {
   std::cout << "\n...!.... !!!! ......!...\n"
             << title << " :"
             << "\n...!.... !!!! ......!...\n" << std::endl;
-  for(Aluno& aluno : v) {
+  for (Aluno& aluno : v) {
     printAluno(aluno);
   }
 }
@@ -93,30 +146,8 @@ std::vector<Aluno> insertionSort(std::vector<Aluno> v) {
 std::vector<Aluno> bubbleSort(std::vector<Aluno> v) {
   std::vector<Aluno> sorted(v);
   int i, j, n=v.size();
-  for(i = (j = 0); j < n-1; ++j, i = (i+1) % (n-1))
-    if(sorted[i].get_matricula() > sorted[i+1].get_matricula())
+  for (i = (j = 0); j < n-1; ++j, i = (i+1) % (n-1))
+    if(sorted[i].get_ira() > sorted[i+1].get_ira())
       swapAluno(sorted[i], sorted[i+1]), j = 0;
   return sorted;
-}
-
-int main(void) {
-  std::vector<Aluno> alunoVector;
-  std::vector<Aluno> selectionSorted;
-  std::vector<Aluno> bubbleSorted;
-  std::vector<Aluno> insertionSorted;
-
-  addAluno(alunoVector, 42, 9.0, "Alberto");
-  addAluno(alunoVector, 369, 9.9, "Maria");
-  addAluno(alunoVector, 352, 8.5, "Beatriz");
-  addAluno(alunoVector, 30, 7.5, "Carlos");
-
-  selectionSorted = selectionSort(alunoVector);
-  bubbleSorted = bubbleSort(alunoVector);
-  insertionSorted = insertionSort(alunoVector);
-
-  printAlunoVector("Selection Sort", selectionSorted);
-  printAlunoVector("Bubble Sort", bubbleSorted);
-  printAlunoVector("Insertion Sort", insertionSorted);
-
-   return 0;
 }
